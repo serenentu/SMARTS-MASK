@@ -4,7 +4,6 @@ import Button from '../assets/Components/Button';
 import ImageViewer from '../assets/Components/ImageViewer';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
-asdasdasdjasodkjo
 
 const PlaceholderImage = require('../assets/images/background-image.png');
 
