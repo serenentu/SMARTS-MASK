@@ -43,7 +43,7 @@ export default function Index() {
             const uploadResponse = await axios.post('http://your-backend-url/api/process-image', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
-
+lkdf
             setProcessedImage(uploadResponse.data.imageUrl); // Assuming backend returns processed image URL
             console.log('Upload successful:', uploadResponse.data);
         } catch (error) {
