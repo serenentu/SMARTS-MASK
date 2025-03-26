@@ -126,6 +126,7 @@ import Button from '../assets/Components/Button';
 import ImageViewer from '../assets/Components/ImageViewer';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
+import { Link, useRouter } from 'expo-router';
 
 // API URL and Key for PhotoRoom API
 const URL = 'https://sdk.photoroom.com/v1/segment'; // PhotoRoom API endpoint
@@ -199,7 +200,7 @@ export default function Index() {
       Alert.alert('Processing Failed', 'Could not remove background.'); // Alert if processing fails
     }
   };
-
+  const router = useRouter();
   return (
     <View style={styles.container}>
       <View style={styles.imageContainer}>
@@ -212,9 +213,10 @@ export default function Index() {
       </View>
 
       <View style={styles.footerContainer}>
-        {/* Button to choose a photo */}
-        <Button theme="primary" label="Choose a photo" onPress={pickImageAsync} />
+    <Button theme="primary" label="Choose a photo" onPress={pickImageAsync} />
+    <Button theme="primary" label="See Results" onPress={() => router.push('/results')} />
       </View>
+
     </View>
   );
 }
@@ -244,4 +246,15 @@ const styles = StyleSheet.create({
     marginTop: 10,
     borderRadius: 10, // Rounded corners for the result image
   },
+  button: {
+    backgroundColor: '#d3d3d3', // 🔹 Fill color (Change this to your preferred color)
+    paddingVertical: 12, // 🔹 Space inside the button (height)
+    paddingHorizontal: 20, // 🔹 Space inside the button (width)
+    borderRadius: 10, // 🔹 Rounded corners
+    borderWidth: 2, // 🔹 Border thickness
+    borderColor: '#0056b3', // 🔹 Border color
+    alignItems: 'center', // 🔹 Centers text inside the button
+    justifyContent: 'center',
+    marginBottom: 50, // 🔹 Space below the button
+}
 });

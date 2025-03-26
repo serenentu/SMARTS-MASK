@@ -10,7 +10,7 @@ export default function Index() {
             <Text style={styles.title}>SMARTMASK</Text>
 
             {/* Add the Image Component */}
-            <Image source={require('../assets/images/cartoon_mask.png')} style={styles.cartoon_mask}/>
+            <Image source={require('../assets/images/worker_mask.jpg')} style={styles.cartoon_mask}/>
             <Link href="/imagereader" style={styles.button}>
         Click here to Start
       </Link>
@@ -31,6 +31,7 @@ const styles = StyleSheet.create({
         fontSize: 40,
         fontWeight: 'bold',
         marginTop: 10,
+        marginBottom: 10,
         color: '#333',
     },
     cartoon_mask: {
@@ -38,6 +39,7 @@ const styles = StyleSheet.create({
         height: 380,
         resizeMode: 'contain',
         marginTop: 0,
+        marginBottom: 20,
     },
     ntu_logo: {
         width: 220,
