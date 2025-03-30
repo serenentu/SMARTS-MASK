@@ -121,5 +121,4 @@ const styles = StyleSheet.create({
         marginBottom: 50, // 🔹 Space below the button
     }
     
-});
-
+    });

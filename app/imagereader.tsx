@@ -1,33 +1,29 @@
 import React, { useState } from 'react';
-import { Text, View, StyleSheet, Image, Alert } from 'react-native';
+import {Text, View, StyleSheet, Image, Alert, ActivityIndicator, TextInput, Modal, Button as RNButton, ScrollView,} from 'react-native';
 import Button from '../assets/Components/Button';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import { useRouter } from 'expo-router';
+import { useResults } from './ResultsContext'; // ✅ using shared context
 
 // API URL and Key for PhotoRoom API
-const URL = 'https://sdk.photoroom.com/v1/segment'; // PhotoRoom API endpoint
-const PlaceholderImage = require('../assets/images/background-image.png'); // Placeholder image
-
-// Please replace with your PhotoRoom API Key (sandbox key for testing)
+const URL = 'https://sdk.photoroom.com/v1/segment';
+const PlaceholderImage = require('../assets/images/background-image.png');
 const API_KEY = 'sandbox_fd48f847b70fe7befcc4ace1afd9d7f21b1e48d1';
 
 export const removeBackground = async (imageUri: string) => {
   try {
-    // Read file as base64 using Expo FileSystem
     const base64Image = await FileSystem.readAsStringAsync(imageUri, {
       encoding: FileSystem.EncodingType.Base64,
     });
 
-    // Prepare the image data as a blob or base64 directly
     const formData = new FormData();
     formData.append('image_file', {
       uri: imageUri,
       name: 'image.png',
       type: 'image/png',
-    } as any); // explicitly typed for React Native compatibility
+    } as any);
 
-    // Send the request to PhotoRoom API
     const apiResponse = await fetch(URL, {
       method: 'POST',
       headers: {
@@ -44,7 +40,6 @@ export const removeBackground = async (imageUri: string) => {
 
     const responseData = await apiResponse.json();
     console.log('API Response:', responseData);
-
     return responseData.result_b64;
   } catch (e) {
     console.error('Error processing image:', e);
@@ -53,82 +48,135 @@ export const removeBackground = async (imageUri: string) => {
   }
 };
 
-// React Native component for the app
 export default function Index() {
-  const [selectedImage, setSelectedImage] = useState<string | undefined>(undefined); // State for selected image URI
-  const [processedImage, setProcessedImage] = useState<string | undefined>(undefined); // State for processed image with background removed
+  const [selectedImage, setSelectedImage] = useState<string | undefined>();
+  const [processedImage, setProcessedImage] = useState<string | undefined>();
+  const [isLoading, setIsLoading] = useState(false);
+  const [nameModalVisible, setNameModalVisible] = useState(false);
+  const [userName, setUserName] = useState('');
 
-  // Function to pick an image from the gallery
+  const router = useRouter();
+  const { addResult } = useResults(); // ✅ access context to store results
+
   const pickImageAsync = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images, // Allow only image selection
-      allowsEditing: false, // Allow editing of the image (optional)
-      quality: 1, // Set image quality (1 = highest)
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: false,
+      quality: 1,
     });
 
     if (!result.canceled) {
-      setSelectedImage(result.assets[0].uri); // Set the selected image URI
-      processImage(result.assets[0].uri); // Process the selected image to remove the background
+      setSelectedImage(result.assets[0].uri);
+      processImage(result.assets[0].uri);
     } else {
-      Alert.alert('No Image Selected', 'You did not select any image.'); // Alert if no image is selected
+      Alert.alert('No Image Selected', 'You did not select any image.');
     }
   };
 
-  // Function to process the selected image by removing its background
   const processImage = async (imageUri: string) => {
-    const bgRemovedImage = await removeBackground(imageUri); // Call removeBackground to process the image
+    setIsLoading(true);
+    const bgRemovedImage = await removeBackground(imageUri);
     if (bgRemovedImage) {
-      setProcessedImage(`data:image/png;base64,${bgRemovedImage}`); // Set the processed image in base64 format
+      const base64Image = `data:image/png;base64,${bgRemovedImage}`;
+      setProcessedImage(base64Image);
+      setNameModalVisible(true); // prompt for name
     } else {
-      Alert.alert('Processing Failed', 'Could not remove background.'); // Alert if processing fails
+      Alert.alert('Processing Failed', 'Could not remove background.');
     }
+    setIsLoading(false);
   };
 
-  const router = useRouter();
+  const saveToMemory = () => {
+    if (!userName || !processedImage) {
+      Alert.alert('Missing Info', 'Please enter your name and try again.');
+      return;
+    }
+
+    addResult({ name: userName, image: processedImage });
+    Alert.alert('Saved', 'Your result has been saved.');
+    setNameModalVisible(false);
+    setUserName('');
+  };
+
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.imageContainer}>
-        {/* Show the placeholder or the processed image */}
-        {!processedImage ? (
-          <Image source={PlaceholderImage} style={styles.resultImage} /> // Show the placeholder image
+        {isLoading ? (
+          <ActivityIndicator size="large" color="#ffffff" />
+        ) : processedImage ? (
+          <Image source={{ uri: processedImage }} style={styles.resultImage} />
         ) : (
-          <Image source={{ uri: processedImage }} style={styles.resultImage} /> // Show the processed image after background removal
+          <Image source={PlaceholderImage} style={styles.resultImage} />
         )}
       </View>
 
       <View style={styles.footerContainer}>
         <Button theme="primary" label="Choose a photo" onPress={pickImageAsync} />
         <Button theme="primary" label="See Results" onPress={() => router.push('/results')} />
+        <Button theme="primary" label="Results History" onPress={() => router.push('/result_history')} />
       </View>
-    </View>
+
+      {/* Name Prompt Modal */}
+      <Modal visible={nameModalVisible} transparent animationType="slide">
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={{ color: 'white', marginBottom: 10 }}>Enter your name:</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Your name"
+              placeholderTextColor="#aaa"
+              value={userName}
+              onChangeText={setUserName}
+            />
+            <RNButton title="Save Result" onPress={saveToMemory} />
+          </View>
+        </View>
+      </Modal>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: '#25292e',
-    alignItems: 'center', // Center all content
+    alignItems: 'center',
+    paddingVertical: 20,
   },
   imageContainer: {
-    flex: 1,
     width: 300,
     height: 300,
     justifyContent: 'center',
-    alignItems: 'center', // Center the image
+    alignItems: 'center',
   },
   footerContainer: {
-    flex: 1 / 3,
-    alignItems: 'center', // Center the footer content
-  },
-  resultContainer: {
     marginTop: 20,
-    alignItems: 'center', // Center the result text
+    alignItems: 'center',
   },
   resultImage: {
     width: 300,
     height: 300,
-    marginTop: 10,
-    borderRadius: 10, // Rounded corners for the result image
+    borderRadius: 10,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.7)',
+  },
+  modalContent: {
+    backgroundColor: '#333',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 10,
+    width: 200,
+    marginBottom: 10,
+    borderRadius: 5,
+    color: 'white',
   },
 });
