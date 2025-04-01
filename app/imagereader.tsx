@@ -1,22 +1,28 @@
 import React, { useState } from 'react';
-import {Text, View, StyleSheet, Image, Alert, ActivityIndicator, TextInput, Modal, Button as RNButton, ScrollView,} from 'react-native';
+import {
+  Text,
+  View,
+  StyleSheet,
+  Image,
+  Alert,
+  ActivityIndicator,
+  TextInput,
+  Modal,
+  Button as RNButton,
+  ScrollView,
+} from 'react-native';
 import Button from '../assets/Components/Button';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import { useRouter } from 'expo-router';
-import { useResults } from './ResultsContext'; // ✅ using shared context
+import { useResults } from './ResultsContext';
 
-// API URL and Key for PhotoRoom API
 const URL = 'https://sdk.photoroom.com/v1/segment';
 const PlaceholderImage = require('../assets/images/background-image.png');
 const API_KEY = 'sandbox_fd48f847b70fe7befcc4ace1afd9d7f21b1e48d1';
 
 export const removeBackground = async (imageUri: string) => {
   try {
-    const base64Image = await FileSystem.readAsStringAsync(imageUri, {
-      encoding: FileSystem.EncodingType.Base64,
-    });
-
     const formData = new FormData();
     formData.append('image_file', {
       uri: imageUri,
@@ -39,7 +45,6 @@ export const removeBackground = async (imageUri: string) => {
     }
 
     const responseData = await apiResponse.json();
-    console.log('API Response:', responseData);
     return responseData.result_b64;
   } catch (e) {
     console.error('Error processing image:', e);
@@ -48,15 +53,14 @@ export const removeBackground = async (imageUri: string) => {
   }
 };
 
-export default function Index() {
-  const [selectedImage, setSelectedImage] = useState<string | undefined>();
+export default function ImageReader() {
   const [processedImage, setProcessedImage] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState(false);
   const [nameModalVisible, setNameModalVisible] = useState(false);
   const [userName, setUserName] = useState('');
 
   const router = useRouter();
-  const { addResult } = useResults(); // ✅ access context to store results
+  const { addResult } = useResults();
 
   const pickImageAsync = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -66,8 +70,8 @@ export default function Index() {
     });
 
     if (!result.canceled) {
-      setSelectedImage(result.assets[0].uri);
-      processImage(result.assets[0].uri);
+      const imageUri = result.assets[0].uri;
+      processImage(imageUri);
     } else {
       Alert.alert('No Image Selected', 'You did not select any image.');
     }
@@ -78,21 +82,32 @@ export default function Index() {
     const bgRemovedImage = await removeBackground(imageUri);
     if (bgRemovedImage) {
       const base64Image = `data:image/png;base64,${bgRemovedImage}`;
-      setProcessedImage(base64Image);
-      setNameModalVisible(true); // prompt for name
+      const filename = `${Date.now()}.png`;
+      const fileUri = `${FileSystem.documentDirectory}${filename}`;
+      await FileSystem.writeAsStringAsync(fileUri, bgRemovedImage, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      setProcessedImage(fileUri);
+      setNameModalVisible(true);
     } else {
       Alert.alert('Processing Failed', 'Could not remove background.');
     }
     setIsLoading(false);
   };
 
-  const saveToMemory = () => {
+  const saveToMemory = async () => {
     if (!userName || !processedImage) {
       Alert.alert('Missing Info', 'Please enter your name and try again.');
       return;
     }
 
-    addResult({ name: userName, image: processedImage });
+    await addResult({
+      name: userName,
+      imageUri: processedImage,
+      timestamp: new Date().toISOString(),
+    });
+
     Alert.alert('Saved', 'Your result has been saved.');
     setNameModalVisible(false);
     setUserName('');
@@ -112,11 +127,9 @@ export default function Index() {
 
       <View style={styles.footerContainer}>
         <Button theme="primary" label="Choose a photo" onPress={pickImageAsync} />
-        <Button theme="primary" label="See Results" onPress={() => router.push('/results')} />
         <Button theme="primary" label="Results History" onPress={() => router.push('/result_history')} />
       </View>
 
-      {/* Name Prompt Modal */}
       <Modal visible={nameModalVisible} transparent animationType="slide">
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>

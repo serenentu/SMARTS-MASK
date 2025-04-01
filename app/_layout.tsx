@@ -16,6 +16,7 @@ export default function RootLayout() {
         <Stack.Screen name="imagereader" options={{ title: 'Image Reader' }} />
         <Stack.Screen name="results" options={{ title: 'Results' }} />
         <Stack.Screen name="result_history" options={{ title: 'Results History' }} />
+        <Stack.Screen name="result_detail" options={{ title: 'Result Details' }} />
       </Stack>
     </ResultsProvider>
   );

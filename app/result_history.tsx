@@ -1,72 +1,107 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, FlatList, SafeAreaView, Button } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Image,
+  TouchableOpacity,
+  Button,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { useResults } from './ResultsContext';
 
 export default function ResultHistory() {
-  const { results } = useResults();
+  const { results, clearResults } = useResults();
   const router = useRouter();
 
   return (
-    <SafeAreaView style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Results History</Text>
 
-      {results.length === 0 ? (
-        <Text style={styles.empty}>No results yet.</Text>
-      ) : (
-        <FlatList
-          data={results}
-          keyExtractor={(_, index) => index.toString()}
-          renderItem={({ item }) => (
-            <View style={styles.row}>
-              <Text style={styles.name}>{item.name}</Text>
-              <Image source={{ uri: item.image }} style={styles.image} />
-            </View>
-          )}
-        />
-      )}
+      {[...results].reverse().map((item, index) => (
+        <TouchableOpacity
+          key={index}
+          style={styles.resultCard}
+          onPress={() =>
+            router.push({
+              pathname: '/result_detail',
+              params: {
+                name: item.name,
+                imageUri: item.imageUri,
+                timestamp: item.timestamp,
+              },
+            })
+          }
+        >
+          <View style={{ flex: 1 }}>
+            <Text style={styles.name}>{item.name}</Text>
+            <Text style={styles.timestamp}>
+              {item.timestamp
+                ? new Date(item.timestamp).toLocaleString('en-SG', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true,
+                  })
+                : 'Unknown time'}
+            </Text>
+          </View>
+          <Image source={{ uri: item.imageUri }} style={styles.resultImage} />
+        </TouchableOpacity>
+      ))}
 
-      <Button title="Go Back" onPress={() => router.back()} />
-    </SafeAreaView>
+      <View style={styles.buttons}>
+        <Button title="CLEAR HISTORY" onPress={clearResults} />
+        <Button title="GO BACK" onPress={() => router.back()} />
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: '#25292e',
-    paddingTop: 40,
-    paddingHorizontal: 20,
+    flexGrow: 1,
+    padding: 20,
+    alignItems: 'center',
   },
   title: {
     fontSize: 24,
     color: 'white',
+    fontWeight: 'bold',
     marginBottom: 20,
-    textAlign: 'center',
   },
-  empty: {
-    color: 'gray',
-    fontSize: 16,
-    textAlign: 'center',
-    marginTop: 20,
-  },
-  row: {
+  resultCard: {
+    backgroundColor: '#333',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 12,
+    width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
-    backgroundColor: '#333',
-    padding: 10,
-    borderRadius: 8,
   },
   name: {
     color: 'white',
-    fontSize: 16,
-    flex: 1,
+    fontSize: 18,
+    fontWeight: 'bold',
   },
-  image: {
+  timestamp: {
+    color: '#aaa',
+    fontSize: 14,
+    marginTop: 4,
+  },
+  resultImage: {
     width: 60,
     height: 60,
     borderRadius: 8,
+    marginLeft: 12,
+  },
+  buttons: {
+    marginTop: 20,
+    width: '100%',
+    gap: 10,
   },
 });
-
