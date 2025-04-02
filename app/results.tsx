@@ -1,62 +1,60 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
 import {Link} from 'expo-router';
 
 // const img = require ("../assets/images/cartoon_mask.png")
 
-export default function index() {
-    return (
-        //if (colourdetectionph = < 6.5 || > 8.3)
-        abnormal()
+export const classifyHealthState = (pH) => {
+    if (pH === null) return "Unknown";
+    if (pH <= 6.5 || pH > 8.3) return "Abnormal";
+    if (pH === 7.5) return "Healthy";
+    if (pH > 6.5 && pH <= 7.7) return "Slight Risk";
+    return "Unknown";
+};
 
-        //if (colourdetectionph = 7.5)
-        //healthy()
+export default function ResultsScreen() {
+    const [pH, setPH] = useState(7.5);
 
-        //if (colourdetectionph = 6.5~7.7)
-        //slightrisk()
-    );
+    // Determine the state based on pH value
+    const healthState = classifyHealthState(pH);
+
+    return renderHealthState(healthState);
 }
+ // 🔹 Function to Render UI Based on Health State
+const renderHealthState = (healthState) => {
+    switch (healthState) {
+        case "Abnormal":
+            return <Abnormal />;
+        case "Healthy":
+            return <Healthy />;
+        case "Slight Risk":
+            return <SlightRisk />;
+    }
+};
 
+const Abnormal = () => (
+    <View style={styles.container}>
+        <Text style={styles.titlerisk}>Abnormal Result!</Text>
+        <Image source={require('../assets/images/at_risk.jpg')} style={styles.cartoon_mask}/>
+        <Text style={styles.text}>Please visit the nearest doctor as soon as possible!</Text>
+    </View>
+);
 
-export function abnormal() {
-    return (
-        <View style={styles.container}>
-            <Text style={styles.titlerisk}>Abnormal Result!</Text>
+const Healthy = () => (
+    <View style={styles.container}>
+        <Text style={styles.titlehealthy}>Healthy!</Text>
+        <Image source={require('../assets/images/healthy.jpg')} style={styles.cartoon_mask}/>
+        <Text style={styles.text}>Nothing to worry about!</Text>
+    </View>
+);
 
-            <Image source={require('../assets/images/at_risk.jpg')} style={styles.cartoon_mask}/>
-            <Text style = {styles.text}>
-                Please visit the nearest doctor at soon as possible!
-            </Text>
-        </View>
-    );
-}
-
-
-export function healthy() {
-    return (
-        <View style={styles.container}>
-            <Text style={styles.titlehealthy}>Healthy!</Text>
-
-            <Image source={require('../assets/images/healthy.jpg')} style={styles.cartoon_mask}/>
-            <Text style = {styles.text}>
-                Nothing to worry about!
-            </Text>
-        </View>
-    );
-}
-
-export function slightrisk() {
-    return (
-        <View style={styles.container}>
-            <Text style={styles.titlecaution}>Slight Risk!</Text>
-
-            <Image source={require('../assets/images/caution.jpg')} style={styles.cartoon_mask}/>
-            <Text style = {styles.text}>
-                Please monitor your health and consider a medical check-up.
-            </Text>
-        </View>
-    );
-}
+const SlightRisk = () => (
+    <View style={styles.container}>
+        <Text style={styles.titlecaution}>Slight Risk!</Text>
+        <Image source={require('../assets/images/caution.jpg')} style={styles.cartoon_mask}/>
+        <Text style={styles.text}>Please monitor your health and consider a medical check-up.</Text>
+    </View>
+);
 
 
 const styles = StyleSheet.create({

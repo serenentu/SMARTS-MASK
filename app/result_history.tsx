@@ -14,6 +14,7 @@ import { useResults } from './ResultsContext';
 export default function ResultHistory() {
   const { results, clearResults } = useResults();
   const router = useRouter();
+  
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -30,6 +31,8 @@ export default function ResultHistory() {
                 name: item.name,
                 imageUri: item.imageUri,
                 timestamp: item.timestamp,
+                pH: item.pH,
+                healthState: item.healthState,
               },
             })
           }
@@ -48,10 +51,14 @@ export default function ResultHistory() {
                   })
                 : 'Unknown time'}
             </Text>
-          </View>
-          <Image source={{ uri: item.imageUri }} style={styles.resultImage} />
-        </TouchableOpacity>
-      ))}
+            {/* 🔹 Display pH and health state */}
+            <Text style={styles.pH}>pH: {item.pH !== undefined ? item.pH.toFixed(2) : 'N/A'}</Text>
+            <Text style={[styles.healthState, getHealthStateStyle(item.healthState)]}>{item.healthState || 'Unknown'}</Text>
+            </View>
+
+            <Image source={{ uri: item.imageUri }} style={styles.resultImage} />
+            </TouchableOpacity>
+            ))}
 
       <View style={styles.buttons}>
         <Button title="CLEAR HISTORY" onPress={clearResults} />
@@ -60,6 +67,21 @@ export default function ResultHistory() {
     </ScrollView>
   );
 }
+
+// Define getHealthStateStyle function outside the component
+const getHealthStateStyle = (healthState) => {
+  switch (healthState) {
+    case 'Healthy': 
+      return { color: '#00ab41' }; // Green for healthy
+    case 'Slight Risk': 
+      return { color: '#FFDE21' }; // Yellow for slight risk
+    case 'Abnormal': 
+      return { color: '#ff0000' }; // Red for abnormal
+    default: 
+      return { color: '#aaa' }; // Grey for unknown
+  }
+};
+
 
 const styles = StyleSheet.create({
   container: {
@@ -91,6 +113,16 @@ const styles = StyleSheet.create({
   timestamp: {
     color: '#aaa',
     fontSize: 14,
+    marginTop: 4,
+  },
+  pH: {
+    color: 'white',
+    fontSize: 16,
+    marginTop: 4,
+  },
+  healthState: {
+    fontSize: 16,
+    fontWeight: 'bold',
     marginTop: 4,
   },
   resultImage: {

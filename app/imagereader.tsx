@@ -16,6 +16,8 @@ import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import { useRouter } from 'expo-router';
 import { useResults } from './ResultsContext';
+import { classifyHealthState } from './results';
+
 
 const URL = 'https://sdk.photoroom.com/v1/segment';
 const PlaceholderImage = require('../assets/images/background-image.png');
@@ -102,10 +104,15 @@ export default function ImageReader() {
       return;
     }
 
+    // 🔹 Set pH manually (later fetch from Python) Change to set on Python
+    const pH = 7;  
+
     await addResult({
       name: userName,
       imageUri: processedImage,
       timestamp: new Date().toISOString(),
+      pH: pH,
+      healthState: classifyHealthState(pH),
     });
 
     Alert.alert('Saved', 'Your result has been saved.');
@@ -127,6 +134,7 @@ export default function ImageReader() {
 
       <View style={styles.footerContainer}>
         <Button theme="primary" label="Choose a photo" onPress={pickImageAsync} />
+        <Button theme="primary" label="Results" onPress={() => router.push('/results')} />
         <Button theme="primary" label="Results History" onPress={() => router.push('/result_history')} />
       </View>
 
