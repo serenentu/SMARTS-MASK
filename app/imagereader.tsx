@@ -20,8 +20,8 @@ import { classifyHealthState } from './healthUtils'; // Update the import statem
 
 const URL = 'https://sdk.photoroom.com/v1/segment';
 const FlaskURL = 'http://192.168.1.130:5000/process_image';
-const PlaceholderImage = require('../assets/images/background-image.png');
-const API_KEY = 'sandbox_7d311d836ce990c1f2d97bc3e96323642869bd38';
+const PlaceholderImage = require('../assets/images/imagereader_placeholder.jpg');
+const API_KEY = 'sandbox_de1bf20587a892aedde1b255344e9276babeebc4';
 
 const removeBackground = async (imageUri: string) => {
   try {
@@ -76,16 +76,16 @@ const processWithFlask = async (imageUri: string, retries = 3) => {
     clearTimeout(timeoutId);
 
     if (!apiResponse.ok) {
-      throw new Error(`Flask API request failed with status ${apiResponse.status}`);
-    }
-
-    const responseData = await apiResponse.json();
-    return responseData;
-  } catch (e) {
-    if (retries > 0) {
-      console.warn(`Retrying... (${retries} retries left)`);
-      return processWithFlask(imageUri, retries - 1);
-    } else {
+		throw new Error(`Flask API request failed with status ${apiResponse.status}`);
+	  }
+  
+	  const responseData = await apiResponse.json();
+	  return responseData;
+	} catch (e) {
+	  if (retries > 0) {
+		console.warn(`Retrying... (${retries} retries left)`);
+		return processWithFlask(imageUri, retries - 1);
+	  } else {
       console.error('Error processing image with Flask:', e);
       Alert.alert('Error', e.message || 'Unknown error occurred');
       return null;
@@ -181,8 +181,7 @@ await addResult({
         <Button theme="primary" label="Results History" onPress={() => router.push('/result_history')} />
         {processedImage && <Button theme="primary" label="Results" onPress={() => router.push('/results')} />}
       </View>
-
-      <Modal visible={nameModalVisible} transparent animationType="slide">
+	  <Modal visible={nameModalVisible} transparent animationType="slide">
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={{ color: 'white', marginBottom: 10 }}>Enter your name:</Text>

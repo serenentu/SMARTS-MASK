@@ -10,7 +10,7 @@ export default function Index() {
             <Text style={styles.title}>SMARTMASK</Text>
 
             {/* Add the Image Component */}
-            <Image source={require('../assets/images/worker_mask.jpg')} style={styles.cartoon_mask}/>
+            <Image source={require('../assets/images/main_menu.jpg')} style={styles.cartoon_mask}/>
             <Link href="/imagereader" style={styles.button}>
         Click here to Start
       </Link>

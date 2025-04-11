@@ -1,10 +1,12 @@
+from os import name
 from flask import Flask, request, jsonify
 import cv2
 import numpy as np
 from collections import Counter
 from matplotlib import pyplot as plt
 
-app = Flask(__name__)
+app = Flask(__name__)  
+
 
 # ====================== IMAGE PREPROCESSING ======================
 def preprocess_image(image):
@@ -22,8 +24,8 @@ def preprocess_image(image):
 
     # Boost Saturation & Brightness
     h, s, v = cv2.split(hsv)
-    s = cv2.add(s, 30)
-    v = cv2.add(v, 30)
+    s = cv2.add(s, 20)
+    v = cv2.add(v, 20)
     hsv_boosted = cv2.merge([h, s, v])
     image_boosted = cv2.cvtColor(hsv_boosted, cv2.COLOR_HSV2BGR)
 
@@ -85,7 +87,7 @@ def split_and_detect(image, sections=5):
 
         # Count the number of pixels for each color
         color_counts = {color: np.count_nonzero(mask) for color, mask in masks.items()}
-        MIN_PIXELS = 25
+        MIN_PIXELS = 20
         color_counts = {color: count for color, count in color_counts.items() if count > MIN_PIXELS}
 
         # Find the dominant color
